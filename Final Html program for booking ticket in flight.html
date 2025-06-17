@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Ticket Booking</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column; /* Stack navigation and content */
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            /* 3D Flight Image Background */
+            background-image: url('https://images.pexels.com/photos/371633/pexels-photo-371633.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        /* Navigation Bar Styles */
+        nav {
+            background-color: rgba(52, 58, 64, 0.8); /* Dark semi-transparent background */
+            color: white;
+            padding: 15px 20px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: rgb(255, 165, 0); /* Orange logo */
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li:first-child {
+            margin-left: 0;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: rgb(0, 123, 255); /* Blue on hover */
+        }
+
+        .booking-container {
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            margin-top: 30px; /* Add some space below the navbar */
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: rgb(0, 123, 255); /* Blue */
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: rgb(76, 175, 80); /* Green */
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgb(204, 204, 204); /* Light Grey */
+            border-radius: 4px;
+            box-sizing: border-box;
+            color: rgb(51, 51, 51); /* Dark Grey */
+        }
+
+        select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position-x: 95%;
+            background-position-y: center;
+            background-size: 1em;
+        }
+
+        button {
+            background-color: rgb(255, 165, 0); /* Orange */
+            color: rgb(255, 255, 255); /* White */
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: rgb(255, 140, 0); /* Darker Orange */
+        }
+
+        .note {
+            font-size: 0.8em;
+            color: rgb(119, 119, 119); /* Grey */
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">FlyHigh</div>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Book Flights</a></li>
+            <li><a href="#">Deals</a></li>
+            <li><a href="#">Contact Us</a></li>
+        </ul>
+    </nav>
+
+    <div class="booking-container">
+        <h2>Book Your Flight</h2>
+        <form id="flightBookingForm" action="#" method="get">
+            <div class="form-group">
+                <label for="from">From:</label>
+                <input type="text" id="from" name="from" placeholder="Enter departure city" required oninput="validateCity('from')">
+                <div id="fromError" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="to">To:</label>
+                <input type="text" id="to" name="to" placeholder="Enter destination city" required oninput="validateCity('to')">
+                <div id="toError" class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="departure_date">Departure Date:</label>
+                <input type="date" id="departure_date" name="departure_date" required>
+            </div>
+            <div class="form-group">
+                <label for="return_date">Return Date (Optional):</label>
+                <input type="date" id="return_date" name="return_date">
+            </div>
+            <div class="form-group">
+                <label for="passengers">Passengers:</label>
+                <select id="passengers" name="passengers">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5+</option>
+                </select>
+            </div>
+            <button type="submit" onclick="handleSearch(event)" disabled>Search Flights</button>
+        </form>
+        <div id="searchResults" class="note" style="margin-top: 20px; text-align: left;">
+            </div>
+    </div>
+
+    <script>
+        const cityRegex = /^[a-zA-Z\s]+$/;
+        const searchButton = document.querySelector('button[type="submit"]');
+        let isFromValid = false;
+        let isToValid = false;
+
+        function validateCity(inputId) {
+            const inputElement = document.getElementById(inputId);
+            const errorDivId = inputId + 'Error';
+            const errorDiv = document.getElementById(errorDivId);
+            const inputValue = inputElement.value;
+
+            if (!cityRegex.test(inputValue)) {
+                errorDiv.textContent = 'Please enter only letters and spaces.';
+                if (inputId === 'from') {
+                    isFromValid = false;
+                } else if (inputId === 'to') {
+                    isToValid = false;
+                }
+            } else {
+                errorDiv.textContent = '';
+                if (inputId === 'from') {
+                    isFromValid = true;
+                } else if (inputId === 'to') {
+                    isToValid = true;
+                }
+            }
+            updateSearchButtonState();
+        }
+
+        function updateSearchButtonState() {
+            searchButton.disabled = !(isFromValid && isToValid);
+        }
+
+        function handleSearch(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            if (!isFromValid || !isToValid) {
+                alert('Please correct the city name formats.');
+                return;
+            }
+
+            const fromCity = document.getElementById('from').value;
+            const toCity = document.getElementById('to').value;
+            const departureDate = document.getElementById('departure_date').value;
+            const returnDate = document.getElementById('return_date').value;
+            const passengers = document.getElementById('passengers').value;
+            const searchResultsDiv = document.getElementById('searchResults');
+
+            // For this static page, we'll just display the search parameters.
+            // In a real application, you would send this data to a server
+            // and process the flight search.
+
+            let resultsHTML = "<h3>Flight Search Parameters:</h3><ul>";
+            resultsHTML += `<li><strong>From:</strong> ${fromCity}</li>`;
+            resultsHTML += `<li><strong>To:</strong> ${toCity}</li>`;
+            resultsHTML += `<li><strong>Departure Date:</strong> ${departureDate}</li>`;
+            if (returnDate) {
+                resultsHTML += `<li><strong>Return Date:</strong> ${returnDate}</li>`;
+            } else {
+                resultsHTML += `<li><strong>Return Date:</strong> One-way</li>`;
+            }
+            resultsHTML += `<li><strong>Passengers:</strong> ${passengers}</li>`;
+            resultsHTML += "</ul><p>Note: This is a static webpage, so no actual flight search is performed.</p>";
+
+            searchResultsDiv.innerHTML = resultsHTML;
+        }
+
+        // Initial state of the search button
+        updateSearchButtonState();
+    </script>
+</body>
+</html>
